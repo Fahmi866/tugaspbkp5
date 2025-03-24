@@ -1,13 +1,14 @@
 <template>
-  <div>
+  <div class="container">
     <h1>{{ title }}</h1>
 
-    <!-- List input dan rendering dengan v-for -->
+    <!-- Input tugas baru -->
     <div class="input-section">
       <input v-model="newTask" placeholder="Tambahkan tugas baru" @keyup.enter="addTask" />
       <button @click="addTask">Tambah</button>
     </div>
 
+    <!-- Daftar tugas -->
     <ul>
       <li v-for="(task, index) in tasks" :key="index" :class="{ 'completed': task.completed }">
         {{ task.text }}
@@ -18,27 +19,25 @@
       </li>
     </ul>
 
-    <!-- Computed property untuk menampilkan jumlah tugas -->
+    <!-- Statistik tugas -->
     <p>Total tugas: {{ totalTasks }}</p>
     <p>Tugas selesai: {{ completedTasksCount }}</p>
     <p>Tugas belum selesai: {{ incompleteTasks }}</p>
 
-    <!-- Pesan original -->
+    <!-- Pesan pengguna -->
     <div class="message-section">
       <input v-model="message" placeholder="Ketik pesan disini" />
       <button @click="showMessage">Tampilkan pesan</button>
       <p v-if="isMessageVisible">{{ message }}</p>
     </div>
 
-    <!-- Template ref untuk manipulasi DOM -->
+    <!-- Highlight teks -->
     <div class="highlight-section">
-      <p ref="highlightText" :class="{ 'highlight': isHighlighted }">
-        Ini adalah teks dengan attribute binding.
-      </p>
+      <p ref="highlightText" :class="{ 'highlight': isHighlighted }">Ini adalah teks dengan attribute binding.</p>
       <button @click="toggleHighlight">Toggle Highlight</button>
     </div>
 
-    <!-- Bagian untuk menampilkan lifecycle status -->
+    <!-- Status Lifecycle -->
     <div class="lifecycle-section">
       <p>Status Lifecycle: {{ lifecycleStatus }}</p>
       <p>Waktu sejak halaman dimuat: {{ timeElapsed }} detik</p>
@@ -47,29 +46,27 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUpdated, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 
-// Data reaktif
-const title = ref('Selamat Datang di Proyek Vue dengan Vitel');
+// Data Reaktif
+const title = ref('Selamat Datang di Aplikasi Vue.js');
 const message = ref('');
 const isMessageVisible = ref(false);
 const isHighlighted = ref(false);
 const lifecycleStatus = ref('Sedang dimuat...');
 const timeElapsed = ref(0);
 const timerInterval = ref(null);
+const newTask = ref('');
+const highlightText = ref(null);
 
-// List untuk v-for
+// Daftar tugas
 const tasks = ref([
   { text: 'Belajar Vue.js', completed: false },
   { text: 'Membuat proyek dengan Vite', completed: false },
   { text: 'Memahami Composition API', completed: false }
 ]);
-const newTask = ref('');
 
-// Template ref
-const highlightText = ref(null);
-
-// Fungsi-fungsi
+// Fungsi
 function showMessage() {
   isMessageVisible.value = true;
 }
@@ -93,16 +90,10 @@ function toggleTaskCompletion(index) {
   tasks.value[index].completed = !tasks.value[index].completed;
 }
 
-// Computed properties
+// Computed Properties
 const totalTasks = computed(() => tasks.value.length);
-
-const completedTasksCount = computed(() => {
-  return tasks.value.filter(task => task.completed).length;
-});
-
-const incompleteTasks = computed(() => {
-  return totalTasks.value - completedTasksCount.value;
-});
+const completedTasksCount = computed(() => tasks.value.filter(task => task.completed).length);
+const incompleteTasks = computed(() => totalTasks.value - completedTasksCount.value);
 
 // Watchers
 watch(tasks, (newTasks) => {
@@ -112,59 +103,26 @@ watch(tasks, (newTasks) => {
   }
 }, { deep: true });
 
-watch(isHighlighted, (newValue) => {
-  console.log('Status highlight berubah:', newValue);
-  if (highlightText.value) {
-    highlightText.value.textContent = newValue 
-      ? 'Teks ini sekarang di-highlight!' 
-      : 'Ini adalah teks dengan attribute binding.';
-  }
-});
-
-// Lifecycle hooks
+// Lifecycle Hooks
 onMounted(() => {
   lifecycleStatus.value = 'Komponen telah dimount';
   console.log('Komponen telah dimount');
-  
-  // Mulai timer ketika komponen dimount
-  timerInterval.value = setInterval(() => {
-    timeElapsed.value++;
-  }, 1000);
-  
-  // Manipulasi DOM menggunakan template ref
-  if (highlightText.value) {
-    highlightText.value.style.transition = 'all 0.5s ease';
-  }
-});
-
-onUpdated(() => {
-  lifecycleStatus.value = 'Komponen baru saja diperbarui';
-  console.log('Komponen baru saja diperbarui');
+  timerInterval.value = setInterval(() => timeElapsed.value++, 1000);
 });
 
 onBeforeUnmount(() => {
   lifecycleStatus.value = 'Komponen akan dihapus';
   console.log('Komponen akan dihapus');
-  
-  // Bersihkan timer sebelum komponen dihapus
-  if (timerInterval.value) {
-    clearInterval(timerInterval.value);
-  }
+  clearInterval(timerInterval.value);
 });
 </script>
 
-<style>
-.highlight {
-  color: red;
-  font-weight: bold;
-  background-color: yellow;
-  padding: 5px;
-  border-radius: 4px;
-}
-
-.completed {
-  text-decoration: line-through;
-  color: green;
+<style scoped>
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
 .input-section, .message-section, .highlight-section, .lifecycle-section {
@@ -183,6 +141,9 @@ li {
   margin: 10px 0;
   padding: 8px;
   border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 button {
@@ -203,6 +164,20 @@ input {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  width: 250px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.highlight {
+  color: red;
+  font-weight: bold;
+  background-color: yellow;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: green;
 }
 </style>
